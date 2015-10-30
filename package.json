@@ -1,0 +1,14 @@
+{
+  "name": "alexa",
+  "version": "1.0.0",
+  "description": "Plays music locally from alexa",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "spotify-web-api-node": "^2.1.0"
+  },
+  "devDependencies": {},
+  "author": "Paul Booth",
+  "license": "ISC"
+}
