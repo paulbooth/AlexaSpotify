@@ -55,11 +55,11 @@ function playTrack(track, callback) {
 
     console.log("playing: " + mostPop.name + ' by ' + mostPop.artists[0].name);  
 
-    var cmd = getChromeCommand() + ' ' + mostPop.external_urls.spotify;
-
-    exec(cmd, function(error, stdout, stderr) {
-      error && console.log("the command broke " + error);
-      callback(error, mostPop);
+    getChromeCommand(mostPop.external_urls.spotify, function(cmd) {
+      exec(cmd, function(error, stdout, stderr) {
+        error && console.log("the command \"" + cmd + "\" broke " + error);
+        callback(error, mostPop);
+      });
     });
   }, function (err) {
     console.log('Something went wrong', err);
@@ -67,6 +67,29 @@ function playTrack(track, callback) {
   });
 }
 
-function getChromeCommand() {
-  return (platform == 'linux') ? 'google-chrome' : 'chrome-cli open';
+function getChromeCommand(link, callback) {
+  if (platform == 'linux') {
+    callback('google-chrome ' + link);
+    return
+  }
+  var getTabsCmd = 'chrome-cli list links | grep "play.spotify.com" | egrep -o ":[0-9]+\]" | egrep -o "[0-9]+"';
+  exec(getTabsCmd, function(error, stdout, stderr) {
+    error && console.log("the grep broke " + error);
+    console.log('cmd', stdout)
+    if (error || stdout.length == 0) {
+      callback('chrome-cli open ' + link);
+    } else {
+      var cmd = stdout
+        .split('\n')
+        .filter(function(tab) { return tab.length > 0; })
+        .map(function(tab, index, arr) {
+          if (index != arr.length - 1) {
+            return 'chrome-cli close -t ' + tab + '; ';
+          }
+            return 'chrome-cli open ' + link; //+ ' -t ' + tab;
+        })
+        .join('');
+      callback(cmd);
+    }
+  });
 }
